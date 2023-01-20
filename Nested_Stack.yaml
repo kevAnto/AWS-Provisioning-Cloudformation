@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template for Nested stack
+Parameters:
+  VPCId:
+    Type: AWS::EC2::VPC::Id
+    Description: Choose 1 VPC from below
+  SubnetId:
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Description: Choose 2 Subnets to create Load balancer and ASG
+Resources:
+ MyWebserverstack1:
+   Type: AWS::CloudFormation::Stack
+   Properties:
+       TemplateURL: https://s3.amazonaws.com/whizlabs.91522.48003963/Nested_ASG.yaml
+       TimeoutInMinutes: 5
+       Parameters:
+         TargetGroupName: !GetAtt 'Elbstack.Outputs.TargetGroupName'
+         VPCSubnet: !Join
+          - ','
+          - !Ref SubnetId
+ Elbstack:
+   Type: AWS::CloudFormation::Stack
+   Properties:
+      TemplateURL: https://s3.amazonaws.com/whizlabs.91522.48003963/Nested_ALB.yaml
+      Parameters:
+        SubnetId: !Join 
+          - ','
+          - !Ref SubnetId
+        VPCId: !Ref VPCId
+Outputs:
+  StackRef:
+    Value: !Ref Elbstack 
+  OutputFromNestedStack:
+    Value: !GetAtt Elbstack.Outputs.TargetGroupName   
+    

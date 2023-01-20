@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS CloudFormation Sample Template for creating LoadBalancer
+Parameters:
+  SubnetId:
+    Type: CommaDelimitedList
+  VPCId:
+    Type: String
+Resources:
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      Name: MyApplicationLoadBalancer
+      Type: application
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      Subnets: !Ref SubnetId 
+      SecurityGroups: 
+        - Fn::GetAtt: [ Elbsg, GroupId ]
+      Tags:
+        - Key: Name
+          Value: ELB_Nested
+  HTTPListener:
+        Type: "AWS::ElasticLoadBalancingV2::Listener"
+        Properties:
+            LoadBalancerArn: !Ref ApplicationLoadBalancer
+            Port: 80
+            Protocol: "HTTP"
+            DefaultActions: 
+              - Type: forward
+                TargetGroupArn: !Ref ALBTargetGroup
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Matcher:
+        HttpCode: 200,302
+      Name: MyWebServers
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      UnhealthyThresholdCount: 5
+      VpcId: !Ref VPCId
+      Tags:
+        - Key: Name 
+          Value: ELB_Nested
+  Elbsg:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: ELB-sg
+      GroupDescription: Security group for Load balancer
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          FromPort: '80'
+          IpProtocol: tcp
+          ToPort: '80'
+      Tags:
+        - Key: Name 
+          Value: ELB_SG
+Outputs:
+  TargetGroupName:
+    Value: !Ref ALBTargetGroup
+    Description: Name of Target ARN
