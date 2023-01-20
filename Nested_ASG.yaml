@@ -9,7 +9,7 @@ Parameters:
   KeyName:
     Description: Key pair name
     Type: 'AWS::EC2::KeyPair::KeyName'
-    Default: whizlabs-key
+    Default: devops
   VPCSubnet:
     Type: CommaDelimitedList
   AMIid:
@@ -29,17 +29,17 @@ Resources:
   WebserverASG:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-        VPCZoneIdentifier: !Ref VPCSubnet
-        TargetGroupARNs:
-              - !Ref TargetGroupName           
-        LaunchConfigurationName: 
-              Ref: LaunchConfig
-        MaxSize: "3"
-        MinSize: "2"
-        Tags:
-          - Key: Name
-            Value: Nested_webserver
-            PropagateAtLaunch: True
+      VPCZoneIdentifier: !Ref VPCSubnet
+      TargetGroupARNs:
+        - !Ref TargetGroupName
+      LaunchConfigurationName:
+        Ref: LaunchConfig
+      MaxSize: '3'
+      MinSize: '2'
+      Tags:
+        - Key: Name
+          Value: Nested_webserver
+          PropagateAtLaunch: True
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -47,19 +47,19 @@ Resources:
         Ref: KeyName
       ImageId: !Ref AMIid
       InstanceType: !Ref WebInstanceType
-      LaunchConfigurationName: LaunchConfig  
-      SecurityGroups: 
-        - Fn::GetAtt: [ WebsecGroup, GroupId ]
+      LaunchConfigurationName: LaunchConfig
+      SecurityGroups:
+        - Fn::GetAtt: [WebsecGroup, GroupId]
       UserData:
-         'Fn::Base64': !Sub |
-           #!/bin/bash
-           # install apache
-           yum install httpd24 -y
-           time=`date`  
-           # start server
-           service httpd start
-           chkconfig httpd on
-           echo "Test page of server created at  "$time"" > /var/www/html/index.html            
+        'Fn::Base64': !Sub |
+          #!/bin/bash
+          # install apache
+          yum install httpd24 -y
+          time=`date`  
+          # start server
+          service httpd start
+          chkconfig httpd on
+          echo "Test page of server created at  "$time"" > /var/www/html/index.html
   WebsecGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
@@ -72,7 +72,7 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: !Ref SSHLocation 
+          CidrIp: !Ref SSHLocation
       Tags:
-        - Key: Name 
+        - Key: Name
           Value: WEBSERVER_SG
