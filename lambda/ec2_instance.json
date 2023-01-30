@@ -1,0 +1,18 @@
+{
+    "Resources": {
+        "myec2instance": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Code": {
+					"S3Bucket": "cf-lambda-lab",
+					"S3Key": "ec2_function.zip"
+				},
+				"Role": { "Fn::Sub": "arn:aws:iam::496437865731:role/labs_cloudformation_lambda_role"},
+                "Timeout": 60,
+                "Handler": "ec2_function.lambda_handler",
+                "Runtime": "python3.7",
+                "MemorySize": 128            
+            }
+        }
+    }
+}
